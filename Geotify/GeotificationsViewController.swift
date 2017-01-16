@@ -26,9 +26,9 @@ class GeotificationsViewController: UIViewController, AddGeotificationsViewContr
     loadAllGeotifications()
   }
 
-  override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
+  override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
     if segue.identifier == "addGeotification" {
-      let navigationController = segue.destinationViewController as! UINavigationController
+      let navigationController = segue.destination as! UINavigationController
       let vc = navigationController.viewControllers.first as! AddGeotificationViewController
       vc.delegate = self
     }
@@ -39,9 +39,9 @@ class GeotificationsViewController: UIViewController, AddGeotificationsViewContr
   func loadAllGeotifications() {
     geotifications = []
 
-    if let savedItems = NSUserDefaults.standardUserDefaults().arrayForKey(kSavedItemsKey) {
+    if let savedItems = UserDefaults.standard.array(forKey: kSavedItemsKey) {
       for savedItem in savedItems {
-        if let geotification = NSKeyedUnarchiver.unarchiveObjectWithData(savedItem as! NSData) as? Geotification {
+        if let geotification = NSKeyedUnarchiver.unarchiveObject(with: savedItem as! Data) as? Geotification {
           addGeotification(geotification)
         }
       }
@@ -51,25 +51,25 @@ class GeotificationsViewController: UIViewController, AddGeotificationsViewContr
   func saveAllGeotifications() {
     let items = NSMutableArray()
     for geotification in geotifications {
-      let item = NSKeyedArchiver.archivedDataWithRootObject(geotification)
-      items.addObject(item)
+      let item = NSKeyedArchiver.archivedData(withRootObject: geotification)
+      items.add(item)
     }
-    NSUserDefaults.standardUserDefaults().setObject(items, forKey: kSavedItemsKey)
-    NSUserDefaults.standardUserDefaults().synchronize()
+    UserDefaults.standard.set(items, forKey: kSavedItemsKey)
+    UserDefaults.standard.synchronize()
   }
 
   // MARK: Functions that update the model/associated views with geotification changes
 
-  func addGeotification(geotification: Geotification) {
+  func addGeotification(_ geotification: Geotification) {
     geotifications.append(geotification)
     mapView.addAnnotation(geotification)
     addRadiusOverlayForGeotification(geotification)
     updateGeotificationsCount()
   }
 
-  func removeGeotification(geotification: Geotification) {
-    if let indexInArray = geotifications.indexOf(geotification) {
-      geotifications.removeAtIndex(indexInArray)
+  func removeGeotification(_ geotification: Geotification) {
+    if let indexInArray = geotifications.index(of: geotification) {
+      geotifications.remove(at: indexInArray)
     }
 
     mapView.removeAnnotation(geotification)
@@ -79,13 +79,13 @@ class GeotificationsViewController: UIViewController, AddGeotificationsViewContr
 
   func updateGeotificationsCount() {
     title = "Geotifications (\(geotifications.count))"
-    navigationItem.rightBarButtonItem?.enabled = (geotifications.count < 20)
+    navigationItem.rightBarButtonItem?.isEnabled = (geotifications.count < 20)
   }
 
   // MARK: AddGeotificationViewControllerDelegate
 
-  func addGeotificationViewController(controller: AddGeotificationViewController, didAddCoordinate coordinate: CLLocationCoordinate2D, radius: Double, identifier: String, note: String, eventType: EventType) {
-    controller.dismissViewControllerAnimated(true, completion: nil)
+  func addGeotificationViewController(_ controller: AddGeotificationViewController, didAddCoordinate coordinate: CLLocationCoordinate2D, radius: Double, identifier: String, note: String, eventType: EventType) {
+    controller.dismiss(animated: true, completion: nil)
 
     let clampedRadius = (radius > locationManager.maximumRegionMonitoringDistance) ? locationManager.maximumRegionMonitoringDistance : radius
     
@@ -98,16 +98,16 @@ class GeotificationsViewController: UIViewController, AddGeotificationsViewContr
 
   // MARK: MKMapViewDelegate
 
-  func mapView(mapView: MKMapView, viewForAnnotation annotation: MKAnnotation) -> MKAnnotationView? {
+  func mapView(_ mapView: MKMapView, viewFor annotation: MKAnnotation) -> MKAnnotationView? {
     let identifier = "myGeotification"
     if annotation is Geotification {
-      var annotationView = mapView.dequeueReusableAnnotationViewWithIdentifier(identifier) as? MKPinAnnotationView
+      var annotationView = mapView.dequeueReusableAnnotationView(withIdentifier: identifier) as? MKPinAnnotationView
       if annotationView == nil {
         annotationView = MKPinAnnotationView(annotation: annotation, reuseIdentifier: identifier)
         annotationView?.canShowCallout = true
-        let removeButton = UIButton(type: .Custom)
+        let removeButton = UIButton(type: .custom)
         removeButton.frame = CGRect(x: 0, y: 0, width: 23, height: 23)
-        removeButton.setImage(UIImage(named: "DeleteGeotification")!, forState: .Normal)
+        removeButton.setImage(UIImage(named: "DeleteGeotification")!, for: UIControlState())
         annotationView?.leftCalloutAccessoryView = removeButton
       } else {
         annotationView?.annotation = annotation
@@ -117,18 +117,18 @@ class GeotificationsViewController: UIViewController, AddGeotificationsViewContr
     return nil
   }
 
-  func mapView(mapView: MKMapView, rendererForOverlay overlay: MKOverlay) -> MKOverlayRenderer! {
-    if overlay is MKCircle {
+  func mapView(_ mapView: MKMapView, rendererFor overlay: MKOverlay) -> MKOverlayRenderer {
+//    if overlay is MKCircle {
       let circleRenderer = MKCircleRenderer(overlay: overlay)
       circleRenderer.lineWidth = 1.0
-      circleRenderer.strokeColor = UIColor.purpleColor()
-      circleRenderer.fillColor = UIColor.purpleColor().colorWithAlphaComponent(0.4)
+      circleRenderer.strokeColor = UIColor.purple
+      circleRenderer.fillColor = UIColor.purple.withAlphaComponent(0.4)
       return circleRenderer
-    }
-    return nil
+//    }
+//    return nil
   }
 
-  func mapView(mapView: MKMapView, annotationView view: MKAnnotationView, calloutAccessoryControlTapped control: UIControl) {
+  func mapView(_ mapView: MKMapView, annotationView view: MKAnnotationView, calloutAccessoryControlTapped control: UIControl) {
     // Delete geotification
     let geotification = view.annotation as! Geotification
     stopMonitoringGeotification(geotification)
@@ -138,18 +138,18 @@ class GeotificationsViewController: UIViewController, AddGeotificationsViewContr
 
   // MARK: Map overlay functions
 
-  func addRadiusOverlayForGeotification(geotification: Geotification) {
-    mapView?.addOverlay(MKCircle(centerCoordinate: geotification.coordinate, radius: geotification.radius))
+  func addRadiusOverlayForGeotification(_ geotification: Geotification) {
+    mapView?.add(MKCircle(center: geotification.coordinate, radius: geotification.radius))
   }
 
-  func removeRadiusOverlayForGeotification(geotification: Geotification) {
+  func removeRadiusOverlayForGeotification(_ geotification: Geotification) {
     // Find exactly one overlay which has the same coordinates & radius to remove
     if let overlays = mapView?.overlays {
       for overlay in overlays {
         if let circleOverlay = overlay as? MKCircle {
           let coord = circleOverlay.coordinate
           if coord.latitude == geotification.coordinate.latitude && coord.longitude == geotification.coordinate.longitude && circleOverlay.radius == geotification.radius {
-            mapView?.removeOverlay(circleOverlay)
+            mapView?.remove(circleOverlay)
             break
           }
         }
@@ -159,49 +159,49 @@ class GeotificationsViewController: UIViewController, AddGeotificationsViewContr
 
   // MARK: Other mapview functions
 
-  @IBAction func zoomToCurrentLocation(sender: AnyObject) {
+  @IBAction func zoomToCurrentLocation(_ sender: AnyObject) {
     zoomToUserLocationInMapView(mapView)
   }
 
-  func locationManager(manager: CLLocationManager, didChangeAuthorizationStatus status: CLAuthorizationStatus) {
-    mapView.showsUserLocation = (status == .AuthorizedAlways)
+  func locationManager(_ manager: CLLocationManager, didChangeAuthorization status: CLAuthorizationStatus) {
+    mapView.showsUserLocation = (status == .authorizedAlways)
   }
   
-  func regionWithGeotification(geotification: Geotification) -> CLCircularRegion {
+  func regionWithGeotification(_ geotification: Geotification) -> CLCircularRegion {
     let region = CLCircularRegion(center: geotification.coordinate, radius: geotification.radius, identifier: geotification.identifier)
 
-    region.notifyOnEntry = (geotification.eventType == .OnEntry)
+    region.notifyOnEntry = (geotification.eventType == .onEntry)
     region.notifyOnExit = !region.notifyOnEntry
     return region
   }
   
-  func startMonitoringGeotification(geotification: Geotification) {
-    if !CLLocationManager.isMonitoringAvailableForClass(CLCircularRegion) {
-      showSimpleAlertWithTitle("Error", message: "Geofencing is not supported on this device!", viewController: self)
-      return
-    }
-    if CLLocationManager.authorizationStatus() != .AuthorizedAlways {
+  func startMonitoringGeotification(_ geotification: Geotification) {
+//    if !CLLocationManager.isMonitoringAvailable(for: CLCircularRegion()) {
+//      showSimpleAlertWithTitle("Error", message: "Geofencing is not supported on this device!", viewController: self)
+//      return
+//    }
+    if CLLocationManager.authorizationStatus() != .authorizedAlways {
       showSimpleAlertWithTitle("Warning", message: "Your geotification is saved but will only be activated once you grant Geotify permission to access the device location.", viewController: self)
     }
     let region = regionWithGeotification(geotification)
-    locationManager.startMonitoringForRegion(region)
+    locationManager.startMonitoring(for: region)
   }
   
-  func stopMonitoringGeotification(geotification: Geotification) {
+  func stopMonitoringGeotification(_ geotification: Geotification) {
     for region in locationManager.monitoredRegions {
       if let circularRegion = region as? CLCircularRegion {
         if circularRegion.identifier == geotification.identifier {
-          locationManager.stopMonitoringForRegion(circularRegion)
+          locationManager.stopMonitoring(for: circularRegion)
         }
       }
     }
   }
   
-  func locationManager(manager: CLLocationManager, monitoringDidFailForRegion region: CLRegion?, withError error: NSError) {
+  func locationManager(_ manager: CLLocationManager, monitoringDidFailFor region: CLRegion?, withError error: Error) {
     print("Monitoring failed for region with identifier: \(region!.identifier)")
   }
   
-  func locationManager(manager: CLLocationManager, didFailWithError error: NSError) {
+  func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
     print("Location Manager failed with the following error: \(error)")
   }
 }

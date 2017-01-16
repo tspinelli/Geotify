@@ -1,0 +1,27 @@
+Testing Notes
+
+• 1st test
+  ○ No sig change usage
+  ○ Started location manager with Best for navigation setting
+  ○ Sending a network packet every 30 seconds
+  ○ Result
+    § Obviously my battery was noticeably draining
+    § It received network results for 3 hours before I stopped it
+• 2nd test
+  ○ Added a sig change notification start before I start location manager
+  ○ Location manager set to a fixed value of 3KM
+  ○ Sending a network packet every 5 minutes
+  ○ Result
+    § Ran for 5 hours just fine
+• 3rd test
+  ○ Turn the location manager on and off with regions
+    § I can only send data IF I have the location manager started, even if that means low precision mode
+  ○ Networking DOES resume if I have turned the location manager off and then back on in the background
+• 4th test - added motion manager
+  ○ Same behavior as the 3rd test
+  ○ Data only sent when the location manager was running - regardless of motion manager
+    • Need to talk with Ibrahim - I think the background task handler is what's allowing the apps to run for some period of time and then stop
+  ○ I only seem to get network calls to complete when the location manager is running - regardless of high/low precision
+• Notes
+  ○ Background fetch is not a viable option for our work
+  ○ Location manager precision can be modified on change of georegion

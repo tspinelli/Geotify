@@ -10,7 +10,7 @@ import UIKit
 import MapKit
 
 protocol AddGeotificationsViewControllerDelegate {
-  func addGeotificationViewController(controller: AddGeotificationViewController, didAddCoordinate coordinate: CLLocationCoordinate2D,
+  func addGeotificationViewController(_ controller: AddGeotificationViewController, didAddCoordinate coordinate: CLLocationCoordinate2D,
     radius: Double, identifier: String, note: String, eventType: EventType)
 }
 
@@ -30,29 +30,29 @@ class AddGeotificationViewController: UITableViewController {
     super.viewDidLoad()
 
     navigationItem.rightBarButtonItems = [addButton, zoomButton]
-    addButton.enabled = false
+    addButton.isEnabled = false
 
     tableView.tableFooterView = UIView()
   }
 
-  @IBAction func textFieldEditingChanged(sender: UITextField) {
-    addButton.enabled = !radiusTextField.text!.isEmpty && !noteTextField.text!.isEmpty
+  @IBAction func textFieldEditingChanged(_ sender: UITextField) {
+    addButton.isEnabled = !radiusTextField.text!.isEmpty && !noteTextField.text!.isEmpty
   }
 
-  @IBAction func onCancel(sender: AnyObject) {
-    dismissViewControllerAnimated(true, completion: nil)
+  @IBAction func onCancel(_ sender: AnyObject) {
+    dismiss(animated: true, completion: nil)
   }
 
-  @IBAction private func onAdd(sender: AnyObject) {
+  @IBAction fileprivate func onAdd(_ sender: AnyObject) {
     let coordinate = mapView.centerCoordinate
     let radius = (radiusTextField.text! as NSString).doubleValue
-    let identifier = NSUUID().UUIDString
+    let identifier = UUID().uuidString
     let note = noteTextField.text
-    let eventType = (eventTypeSegmentedControl.selectedSegmentIndex == 0) ? EventType.OnEntry : EventType.OnExit
+    let eventType = (eventTypeSegmentedControl.selectedSegmentIndex == 0) ? EventType.onEntry : EventType.onExit
     delegate!.addGeotificationViewController(self, didAddCoordinate: coordinate, radius: radius, identifier: identifier, note: note!, eventType: eventType)
   }
 
-  @IBAction private func onZoomToCurrentLocation(sender: AnyObject) {
+  @IBAction fileprivate func onZoomToCurrentLocation(_ sender: AnyObject) {
     zoomToUserLocationInMapView(mapView)
   }
 }

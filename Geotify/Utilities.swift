@@ -11,14 +11,14 @@ import MapKit
 
 // MARK: Helper Functions
 
-func showSimpleAlertWithTitle(title: String!, message: String, viewController: UIViewController) {
-  let alert = UIAlertController(title: title, message: message, preferredStyle: .Alert)
-  let action = UIAlertAction(title: "OK", style: .Cancel, handler: nil)
+func showSimpleAlertWithTitle(_ title: String!, message: String, viewController: UIViewController) {
+  let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
+  let action = UIAlertAction(title: "OK", style: .cancel, handler: nil)
   alert.addAction(action)
-  viewController.presentViewController(alert, animated: true, completion: nil)
+  viewController.present(alert, animated: true, completion: nil)
 }
 
-func zoomToUserLocationInMapView(mapView: MKMapView) {
+func zoomToUserLocationInMapView(_ mapView: MKMapView) {
   if let coordinate = mapView.userLocation.location?.coordinate {
     let region = MKCoordinateRegionMakeWithDistance(coordinate, 1000, 1000)
     mapView.setRegion(region, animated: true)

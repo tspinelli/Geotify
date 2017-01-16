@@ -18,8 +18,8 @@ let kGeotificationNoteKey = "note"
 let kGeotificationEventTypeKey = "eventType"
 
 enum EventType: Int {
-  case OnEntry = 0
-  case OnExit
+  case onEntry = 0
+  case onExit
 }
 
 class Geotification: NSObject, NSCoding, MKAnnotation {
@@ -37,7 +37,7 @@ class Geotification: NSObject, NSCoding, MKAnnotation {
   }
 
   var subtitle: String? {
-    let eventTypeString = eventType == .OnEntry ? "On Entry" : "On Exit"
+    let eventTypeString = eventType == .onEntry ? "On Entry" : "On Exit"
     return "Radius: \(radius)m - \(eventTypeString)"
   }
 
@@ -52,21 +52,21 @@ class Geotification: NSObject, NSCoding, MKAnnotation {
   // MARK: NSCoding
 
   required init?(coder decoder: NSCoder) {
-    let latitude = decoder.decodeDoubleForKey(kGeotificationLatitudeKey)
-    let longitude = decoder.decodeDoubleForKey(kGeotificationLongitudeKey)
+    let latitude = decoder.decodeDouble(forKey: kGeotificationLatitudeKey)
+    let longitude = decoder.decodeDouble(forKey: kGeotificationLongitudeKey)
     coordinate = CLLocationCoordinate2D(latitude: latitude, longitude: longitude)
-    radius = decoder.decodeDoubleForKey(kGeotificationRadiusKey)
-    identifier = decoder.decodeObjectForKey(kGeotificationIdentifierKey) as! String
-    note = decoder.decodeObjectForKey(kGeotificationNoteKey) as! String
-    eventType = EventType(rawValue: decoder.decodeIntegerForKey(kGeotificationEventTypeKey))!
+    radius = decoder.decodeDouble(forKey: kGeotificationRadiusKey)
+    identifier = decoder.decodeObject(forKey: kGeotificationIdentifierKey) as! String
+    note = decoder.decodeObject(forKey: kGeotificationNoteKey) as! String
+    eventType = EventType(rawValue: decoder.decodeInteger(forKey: kGeotificationEventTypeKey))!
   }
 
-  func encodeWithCoder(coder: NSCoder) {
-    coder.encodeDouble(coordinate.latitude, forKey: kGeotificationLatitudeKey)
-    coder.encodeDouble(coordinate.longitude, forKey: kGeotificationLongitudeKey)
-    coder.encodeDouble(radius, forKey: kGeotificationRadiusKey)
-    coder.encodeObject(identifier, forKey: kGeotificationIdentifierKey)
-    coder.encodeObject(note, forKey: kGeotificationNoteKey)
-    coder.encodeInt(Int32(eventType.rawValue), forKey: kGeotificationEventTypeKey)
+  func encode(with coder: NSCoder) {
+    coder.encode(coordinate.latitude, forKey: kGeotificationLatitudeKey)
+    coder.encode(coordinate.longitude, forKey: kGeotificationLongitudeKey)
+    coder.encode(radius, forKey: kGeotificationRadiusKey)
+    coder.encode(identifier, forKey: kGeotificationIdentifierKey)
+    coder.encode(note, forKey: kGeotificationNoteKey)
+    coder.encodeCInt(Int32(eventType.rawValue), forKey: kGeotificationEventTypeKey)
   }
 }
